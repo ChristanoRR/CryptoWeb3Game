@@ -1,0 +1,87 @@
+from web3 import Web3
+from eth_abi import encode_single, decode_single
+import json
+
+# Connect to a local Ethereum node (change the provider URL as needed)
+w3 = Web3(Web3.HTTPProvider('http://localhost:8545'))
+
+# Check connection status
+if w3.isConnected():
+    print("Connected to Ethereum node")
+
+# Set the contract address and ABI (ERC20 token contract)
+contract_address = "0x123456789..."
+contract_abi = json.loads('''
+    [
+        {
+            "constant": true,
+            "inputs": [],
+            "name": "name",
+            "outputs": [{"name": "", "type": "string"}],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "constant": true,
+            "inputs": [],
+            "name": "symbol",
+            "outputs": [{"name": "", "type": "string"}],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "constant": true,
+            "inputs": [],
+            "name": "decimals",
+            "outputs": [{"name": "", "type": "uint8"}],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "constant": true,
+            "inputs": [{"name": "_owner", "type": "address"}],
+            "name": "balanceOf",
+            "outputs": [{"name": "balance", "type": "uint256"}],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "constant": false,
+            "inputs": [{"name": "_to", "type": "address"}, {"name": "_amount", "type": "uint256"}],
+            "name": "transfer",
+            "outputs": [{"name": "", "type": "bool"}],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function"
+        }
+    ]
+''')
+
+# Create a contract instance
+contract = w3.eth.contract(address=contract_address, abi=contract_abi)
+
+# Get token information
+name = contract.functions.name().call()
+symbol = contract.functions.symbol().call()
+decimals = contract.functions.decimals().call()
+print("Token Name:", name)
+print("Token Symbol:", symbol)
+print("Token Decimals:", decimals)
+
+# Read balance of an address
+address = "0xabcdef123..."
+balance = contract.functions.balanceOf(address).call()
+balance = balance / (10 ** decimals)
+print("Address Balance:", balance, symbol)
+
+# Transfer tokens to another address
+private_key = "0x123456789..."
+receiver_address = "0x987654321..."
+amount = 100  # Amount to transfer (in the token's base unit)
+
+# Prepare the transaction data
+transfer_data = contract
